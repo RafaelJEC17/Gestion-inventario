@@ -1,18 +1,20 @@
+from tkinter import INSERT
+
 import psycopg
 from psycopg.rows import dict_row
 
-# Una sola variable limpia con todos tus datos reales de Supabase.
-# RECUERDA: Cambia [YOUR-PASSWORD] por la contraseña real que le pusiste a Supabase.
-URL_DE_SUPABASE = "postgresql://rafael:lCP262T35MwwlUEKrNaOwfIH9YIGSSd3@dpg-d8fepof7f7vs73cub09g-a.ohio-postgres.render.com/inventario_cloud"
+# Una sola variable limpia con todos tus datos reales de Render.
+# RECUERDA: Cambia [YOUR-PASSWORD] por la contraseña real que le pusiste a Render.
+URL_DE_RENDER = "postgresql://rafael:lCP262T35MwwlUEKrNaOwfIH9YIGSSd3@dpg-d8fepof7f7vs73cub09g-a.ohio-postgres.render.com/inventario_cloud"
 
 def conseguir_conexion():
-    """Función para conectar directamente a la base de datos de Supabase"""
+    """Función para conectar directamente a la base de datos de Render"""
     try:
         # Pasamos la URL directa y listo, psycopg se encarga del resto
-        conexion = psycopg.connect(URL_DE_SUPABASE, row_factory=dict_row)
+        conexion = psycopg.connect(URL_DE_RENDER, row_factory=dict_row)
         return conexion
     except Exception as e:
-        print(f"Error al conectar a Supabase: {e}")
+        print(f"Error al conectar a Render: {e}")
         return None
 
 if __name__ == "__main__":
@@ -39,6 +41,21 @@ if __name__ == "__main__":
                 categoria_id INT,
                 FOREIGN KEY (categoria_id) REFERENCES categorias(id) ON DELETE SET NULL
             );
+        """)
+        
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL, -- Guardar contraseñas en texto plano es peligroso
+                rol VARCHAR(20) DEFAULT 'admin'
+            );
+        """)
+        
+        cursor.execute("""
+            INSERT INTO usuarios (username, password_hash, rol) 
+            VALUES ('rafael', 'admin123', 'admin')
+            ON CONFLICT (username) DO NOTHING;
         """)
         
         conexion.commit()
