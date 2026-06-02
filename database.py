@@ -2,21 +2,22 @@ import streamlit as st
 import psycopg
 from psycopg.rows import dict_row
 
-# Usamos la URL que tienes definida
-URL_DE_RENDER = "postgresql://postgres.oecjufwgepeakcqmrelx:[YOUR-PASSWORD]@aws-1-us-east-1.pooler.supabase.com:6543/postgres"
+# Cambiamos el nombre de la variable para que haga match con tu base de datos actual
+URL_DE_SUPABASE = "postgresql://postgres.oecjufwgepeakcqmrelx:I8ofk123456789kul@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
 
 def conseguir_conexion():
-    """Función para conectar directamente a la base de datos de Render"""
+    """Función para conectar directamente a la base de datos de Supabase"""
     try:
-        conexion = psycopg.connect(URL_DE_RENDER, row_factory=dict_row)
+        # Añadimos sslmode=require al final si no lo tenías para evitar rechazos de Supabase
+        conexion = psycopg.connect(URL_DE_SUPABASE, row_factory=dict_row)
         return conexion
     except Exception as e:
-        print(f"Error al conectar a Render: {e}")
+        print(f"Error al conectar a Supabase: {e}")
         return None
 
 def inicializar_base_datos():
-    """Función que crea las tablas y el usuario administrador en Render"""
-    print("Verificando/Creando tablas en la base de datos de Render...")
+    """Función que crea las tablas y el usuario administrador en Supabase"""
+    print("Verificando/Creando tablas en la base de datos de Supabase...")
     conexion = conseguir_conexion()
     if conexion:
         try:
@@ -67,26 +68,25 @@ def inicializar_base_datos():
             print(f"Error ejecutando la inicialización: {e}")
 
 def verificar_usuario(username, password):
-    """Busca el usuario en la base de datos y verifica su credencial usando COUNT"""
+    """Busca el usuario en la base de datos y verifica su credencial usando un alias explícito"""
     conexion = conseguir_conexion()
     if not conexion:
         return False
     try:
         cursor = conexion.cursor()
-        # Contamos cuántos usuarios coinciden con ese username y contraseña
+        
+        # CAMBIO CLAVE: Agregamos "AS total" para fijar el nombre de la columna en el diccionario
         cursor.execute(
-            "SELECT COUNT(*) FROM usuarios WHERE username = %s AND password_hash = %s;", 
+            "SELECT COUNT(*) AS total FROM usuarios WHERE username = %s AND password_hash = %s;", 
             (username.strip(), password.strip())
         )
-        # fetchone() nos devolverá algo como (0,) o (1,) dependiendo de si coincide
         resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
         
-        # Si la respuesta es un diccionario (por dict_row), accedemos por la clave 'count'
-        # Si es una tupla/lista normal, accedemos por el índice 0
+        # Evaluamos de forma segura según el tipo de respuesta
         if isinstance(resultado, dict):
-            cantidad = resultado.get('count', 0)
+            cantidad = resultado.get('total', 0)
         else:
             cantidad = resultado[0] if resultado else 0
             
