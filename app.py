@@ -1,5 +1,11 @@
 import streamlit as st
-from database import conseguir_conexion, verificar_usuario
+from database import conseguir_conexion, verificar_usuario, inicializar_base_datos
+
+# Configuración de la página
+st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
+
+# Manda a llamar la configuración automática en Render antes de pintar las pestañas
+inicializar_base_datos()
 
 # Configuración de la página
 st.set_page_config(page_title="Control de Inventario", page_icon="📦", layout="wide")
