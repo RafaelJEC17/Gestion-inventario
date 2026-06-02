@@ -67,20 +67,30 @@ def inicializar_base_datos():
             print(f"Error ejecutando la inicialización: {e}")
 
 def verificar_usuario(username, password):
-    """Busca el usuario en Render y verifica su credencial"""
+    """Busca el usuario en la base de datos y verifica su credencial usando COUNT"""
     conexion = conseguir_conexion()
     if not conexion:
         return False
     try:
         cursor = conexion.cursor()
+        # Contamos cuántos usuarios coinciden con ese username y contraseña
         cursor.execute(
-            "SELECT * FROM usuarios WHERE username = %s AND password_hash = %s;", 
+            "SELECT COUNT(*) FROM usuarios WHERE username = %s AND password_hash = %s;", 
             (username.strip(), password.strip())
         )
-        usuario = cursor.fetchone()
+        # fetchone() nos devolverá algo como (0,) o (1,) dependiendo de si coincide
+        resultado = cursor.fetchone()
         cursor.close()
         conexion.close()
-        return usuario is not None
+        
+        # Si la respuesta es un diccionario (por dict_row), accedemos por la clave 'count'
+        # Si es una tupla/lista normal, accedemos por el índice 0
+        if isinstance(resultado, dict):
+            cantidad = resultado.get('count', 0)
+        else:
+            cantidad = resultado[0] if resultado else 0
+            
+        return cantidad > 0
     except Exception as e:
         print(f"Error al autenticar: {e}")
         return False
