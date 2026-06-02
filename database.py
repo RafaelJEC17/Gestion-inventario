@@ -3,7 +3,7 @@ import psycopg
 from psycopg.rows import dict_row
 
 # Usamos la URL que tienes definida
-URL_DE_RENDER = "postgresql://rafael:lCP262T35MwwlUEKrNaOwfIH9YIGSSd3@dpg-d8fepof7f7vs73cub09g-a.ohio-postgres.render.com/inventario_cloud"
+URL_DE_RENDER = "postgresql://postgres.oecjufwgepeakcqmrelx:[YOUR-PASSWORD]@aws-1-us-east-1.pooler.supabase.com:6543/postgres"
 
 def conseguir_conexion():
     """Función para conectar directamente a la base de datos de Render"""
